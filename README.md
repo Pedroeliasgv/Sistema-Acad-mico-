@@ -46,7 +46,7 @@ Além das funções básicas de um sistema educacional, o projeto visa incluir u
 ```bash
 # 1️⃣ Clone o repositório
 git clone https://github.com/seuusuario/sistema-academico.git
-cd sistema-academico
+cd chatbot_academic
 
 # 2️⃣ Crie um ambiente virtual
 python -m venv venv
