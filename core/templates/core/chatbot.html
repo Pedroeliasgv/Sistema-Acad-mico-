@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg p-4">
+    <h2 class="text-center mb-3">🤖 Chatbot Acadêmico</h2>
+    <div id="chat-box" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
+      <p><strong>Bot:</strong> Olá! Em breve poderei conversar com você 😊</p>
+    </div>
+    <form class="d-flex">
+      <input type="text" class="form-control me-2" placeholder="Digite sua mensagem..." disabled>
+      <button class="btn btn-secondary" disabled>Enviar</button>
+    </form>
+    <div class="text-center mt-3">
+      <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">⬅️ Voltar ao Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
