@@ -1,0 +1,28 @@
+{% extends 'core/base.html' %}
+{% block title %}Cadastro{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="height: 70vh;">
+  <div class="card p-4" style="width: 400px;">
+    <h4 class="text-center mb-3">Criar Conta</h4>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Usuário</label>
+        <input type="text" name="username" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">E-mail</label>
+        <input type="email" name="email" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Senha</label>
+        <input type="password" name="password" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+      <p class="text-center mt-3 mb-0">
+        <a href="{% url 'login' %}">Já tem conta? Entrar</a>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}
