@@ -1,98 +1,175 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Profile, Subject, Grade, Attendance, LibraryItem, Notification, Task, ForumPost
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .forms import AlunoSignUpForm, ProfessorSignUpForm
+
+User = get_user_model()
+
+# --------------------- LOGIN/LOGOUT ---------------------
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        tipo = request.POST.get("tipo")
+
         user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            return redirect("dashboard")
-        else:
+
+        if user is None:
             messages.error(request, "Usuário ou senha incorretos.")
+            return render(request, "core/login.html", {"username": username})
+
+        if tipo == "aluno" and not user.is_aluno:
+            messages.error(request, "Este usuário não é aluno.")
+            return render(request, "core/login.html", {"username": username})
+        if tipo == "professor" and not user.is_professor:
+            messages.error(request, "Este usuário não é professor.")
+            return render(request, "core/login.html", {"username": username})
+
+        login(request, user)
+
+        if user.is_aluno:
+            return redirect("aluno_dashboard")
+        else:
+            return redirect("professor_dashboard")
+
     return render(request, "core/login.html")
 
-def register_view(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Usuário já existe.")
-        else:
-            user = User.objects.create_user(username=username, email=email, password=password)
-            Profile.objects.create(user=user)
-            login(request, user)
-            return redirect("dashboard")
-    return render(request, "core/register.html")
 
 def logout_view(request):
     logout(request)
     return redirect("login")
 
-@login_required
-def dashboard_view(request):
-    return render(request, "core/dashboard.html")
 
-@login_required
-def profile_view(request):
-    profile = getattr(request.user, "profile", None)
+# --------------------- CADASTRO ---------------------
+
+def cadastro_aluno(request):
     if request.method == "POST":
-        # edição simples
-        request.user.email = request.POST.get("email", request.user.email)
-        request.user.save()
-        if profile:
-            profile.bio = request.POST.get("bio", profile.bio)
-            profile.telefone = request.POST.get("telefone", profile.telefone)
-            profile.save()
-        messages.success(request, "Perfil atualizado.")
-        return redirect("profile")
-    return render(request, "core/profile.html", {"profile": profile})
+        form = AlunoSignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_aluno = True
+            user.save()
+            messages.success(request, "Aluno cadastrado com sucesso.")
+            login(request, user)
+            return redirect("aluno_dashboard")
+        else:
+            messages.error(request, "Verifique os dados do formulário.")
+    else:
+        form = AlunoSignUpForm()
+    return render(request, "core/cadastro_aluno.html", {"form": form})
+
+
+def cadastro_professor(request):
+    if request.method == "POST":
+        form = ProfessorSignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_professor = True
+            user.save()
+            messages.success(request, "Professor cadastrado com sucesso.")
+            login(request, user)
+            return redirect("professor_dashboard")
+        else:
+            messages.error(request, "Verifique os dados do formulário.")
+    else:
+        form = ProfessorSignUpForm()
+    return render(request, "core/cadastro_professor.html", {"form": form})
+
+
+# --------------------- DASHBOARDS ---------------------
 
 @login_required
-def assistant_view(request):
-    return render(request, "core/assistant.html")
+def aluno_dashboard(request):
+    if not request.user.is_aluno:
+        return redirect("login")
+    return render(request, "core/aluno_dashboard.html")
+
 
 @login_required
-def subjects_view(request):
-    subjects = Subject.objects.all()
-    return render(request, "core/subjects.html", {"subjects": subjects})
+def professor_dashboard(request):
+    if not request.user.is_professor:
+        return redirect("login")
+    return render(request, "core/professor_dashboard.html")
+
+
+# --------------------- ALUNO ---------------------
 
 @login_required
-def grades_view(request):
-    grades = Grade.objects.filter(student=request.user)
-    return render(request, "core/grades.html", {"grades": grades})
+def aluno_notas(request):
+    return render(request, "core/aluno_notas.html")
 
 @login_required
-def attendance_view(request):
-    records = Attendance.objects.filter(student=request.user)
-    return render(request, "core/attendance.html", {"records": records})
+def aluno_faltas(request):
+    return render(request, "core/aluno_faltas.html")
 
 @login_required
-def library_view(request):
-    items = LibraryItem.objects.all()
-    return render(request, "core/library.html", {"items": items})
+def aluno_biblioteca(request):
+    return render(request, "core/aluno_biblioteca.html")
 
 @login_required
-def notifications_view(request):
-    notifs = Notification.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "core/notifications.html", {"notifs": notifs})
+def aluno_tarefas(request):
+    return render(request, "core/aluno_tarefas.html")
 
 @login_required
-def tasks_view(request):
-    tasks = Task.objects.filter(assigned_to=request.user)
-    return render(request, "core/tasks.html", {"tasks": tasks})
+def aluno_notificacoes(request):
+    return render(request, "core/aluno_notificacoes.html")
 
 @login_required
-def forum_view(request):
-    posts = ForumPost.objects.all().order_by("-created_at")
-    return render(request, "core/forum.html", {"posts": posts})
+def aluno_forum(request):
+    return render(request, "core/aluno_forum.html")
 
 @login_required
-def chatbot_view(request):
-    return render(request, 'core/chatbot.html')
+def aluno_perfil(request):
+    return render(request, "core/aluno_perfil.html")
+
+
+# --------------------- PROFESSOR ---------------------
+
+@login_required
+def prof_turmas(request):
+    return render(request, "core/prof_turmas.html")
+
+@login_required
+def prof_presenca(request):
+    return render(request, "core/prof_presenca.html")
+
+@login_required
+def prof_notas(request):
+    return render(request, "core/prof_notas.html")
+
+@login_required
+def prof_biblioteca(request):
+    return render(request, "core/prof_biblioteca.html")
+
+@login_required
+def prof_tarefa(request):
+    return render(request, "core/prof_tarefa.html")
+
+@login_required
+def prof_forum(request):
+    return render(request, "core/prof_forum.html")
+
+@login_required
+def prof_perfil(request):
+    return render(request, "core/prof_perfil.html")
+
+
+# --------------------- CHATBOT ---------------------
+
+def chatbot_page(request):
+    return render(request, "core/chatbot.html")
+
+
+@csrf_exempt
+def chatbot_api(request):
+    if request.method == "POST":
+        import json
+        body = json.loads(request.body)
+        question = body.get("message", "")
+        # Resposta simulada sem depender de IA externa
+        answer = f"Resposta simulada para: {question}"
+        return JsonResponse({"answer": answer})
