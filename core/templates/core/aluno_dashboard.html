@@ -1,0 +1,79 @@
+<!-- DASHBOARD ALUNO COM CHATBOT INTEGRADO -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard Aluno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+    <!-- SIDEBAR LATERAL -->
+    <aside class="w-64 bg-white shadow-lg h-screen fixed left-0 top-0 p-6 flex flex-col">
+        <h2 class="text-2xl font-bold mb-8">Painel do Aluno</h2>
+
+        <nav class="flex flex-col gap-4 text-lg">
+            <a href="/aluno/dashboard/" class="hover:text-blue-600">📊 Dashboard</a>
+            <a href="/aluno/notas/" class="hover:text-blue-600">📘 Minhas Notas</a>
+            <a href="/aluno/faltas/" class="hover:text-blue-600">📅 Faltas</a>
+            <a href="/aluno/biblioteca/" class="hover:text-blue-600">📚 Biblioteca</a>
+            <a href="/aluno/tarefas/" class="hover:text-blue-600">📝 Tarefas</a>
+            <a href="/aluno/notificacoes/" class="hover:text-blue-600">🔔 Notificações</a>
+            <a href="/aluno/forum/" class="hover:text-blue-600">💬 Fórum</a>
+            <a href="https://chat.deepseek.com" target="_blank"
+            class="hover:text-blue-600">🤖 Chatbot</a>
+            <a href="/aluno/perfil/" class="hover:text-blue-600">👤 Perfil</a>
+            <a href="{% url 'logout' %}" class="text-red-600 font-bold">Sair</a>
+        </nav>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="ml-64 p-10 w-full">
+        <h1 class="text-3xl font-bold mb-6">Bem-vindo ao Dashboard, Aluno!</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow">📘 Suas Notas</div>
+            <div class="bg-white p-6 rounded-xl shadow">📅 Suas Faltas</div>
+            <div class="bg-white p-6 rounded-xl shadow">🔔 Notificações</div>
+        </div>
+    </main>
+
+    <!-- CHATBOT FLOTANTE -->
+    <div id="chatbot" class="fixed bottom-4 right-4 bg-white shadow-xl rounded-lg w-80 p-4 border hidden">
+        <h3 class="text-lg font-bold mb-2">Assistente Virtual</h3>
+        <div id="chatbox" class="h-64 overflow-y-auto border p-2 mb-2 text-sm"></div>
+
+        <input type="text" id="userInput" class="w-full border p-2 rounded" placeholder="Digite sua pergunta..." />
+        <button onclick="sendMessage()" class="w-full mt-2 bg-blue-600 text-white py-2 rounded">Enviar</button>
+    </div>
+
+    <button onclick="toggleChatbot()" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-full shadow-xl">💬</button>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById("userInput");
+            const box = document.getElementById("chatbox");
+        
+            const userText = input.value;
+            if (!userText.trim()) return;
+        
+            box.innerHTML += `<div><strong>Você:</strong> ${userText}</div>`;
+            input.value = "";
+        
+            fetch("/api/chatbot/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: userText })
+            })
+            .then(r => r.json())
+            .then(data => {
+                const reply = data.answer || "Erro ao responder.";
+                box.innerHTML += `<div><strong>Bot:</strong> ${reply}</div>`;
+                box.scrollTop = box.scrollHeight;
+            });
+        }        
+    </script>
+</body>
+</html>

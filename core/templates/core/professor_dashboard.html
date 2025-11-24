@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <title>LMS - Professor</title>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <aside class="w-64 bg-blue-800 text-white flex flex-col p-4 space-y-4">
+            <h1 class="text-3xl font-bold mb-6">
+                Bem-vindo, Prof. {{ request.user.first_name }}
+            </h1>
+
+            <a href="/prof/dashboard/" class="block p-2 rounded hover:bg-blue-600">🏠 Dashboard</a>
+            <a href="/prof/disciplinas/" class="block p-2 rounded hover:bg-blue-600">📚 Disciplinas</a>
+            <a href="/prof/notas/" class="block p-2 rounded hover:bg-blue-600">📝 Notas</a>
+            <a href="/prof/frequencia/" class="block p-2 rounded hover:bg-blue-600">📅 Frequência</a>
+            <a href="/prof/biblioteca/" class="block p-2 rounded hover:bg-blue-600">📖 Biblioteca</a>
+            <a href="/prof/tarefas/" class="block p-2 rounded hover:bg-blue-600">🗂️ Tarefas</a>
+            <a href="/prof/notificacoes/" class="block p-2 rounded hover:bg-blue-600">🔔 Notificações</a>
+            <a href="/prof/forum/" class="block p-2 rounded hover:bg-blue-600">💬 Fórum</a>
+            <a href="https://chat.deepseek.com" target="_blank"
+            class="hover:text-blue-600">🤖 Chatbot</a>
+            <a href="/logout/" class="block p-2 rounded hover:bg-red-600 mt-auto">🚪 Sair</a>
+        </aside>
+
+        <!-- Conteúdo -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- CHATBOT -->
+        <div id="chatbot-prof" class="fixed bottom-4 right-4 bg-white shadow-xl rounded-lg w-80 p-4 border hidden">
+            <h3 class="text-lg font-bold mb-2">Assistente Virtual</h3>
+            <div id="chatbox-prof" class="h-64 overflow-y-auto border p-2 mb-2 text-sm"></div>
+
+            <input type="text" id="userInputProf" class="w-full border p-2 rounded" placeholder="Digite sua pergunta..." />
+            <button onclick="sendMessageProf()" class="w-full mt-2 bg-blue-600 text-white py-2 rounded">Enviar</button>
+        </div>
+
+        <button onclick="toggleChatbotProf()" class="fixed bottom-4 right-4 bg-blue-700 text-white px-4 py-3 rounded-full shadow-xl">💬</button>
+    </div>
+
+    <script>
+        function sendMessageProf() {
+            const input = document.getElementById("userInputProf");
+            const box = document.getElementById("chatbox-prof");
+        
+            const userText = input.value;
+            if (!userText.trim()) return;
+        
+            box.innerHTML += `<div><strong>Você:</strong> ${userText}</div>`;
+            input.value = "";
+        
+            fetch("/api/chatbot/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: userText })
+            })
+            .then(r => r.json())
+            .then(data => {
+                const reply = data.answer || "Erro ao responder.";
+                box.innerHTML += `<div><strong>Bot:</strong> ${reply}</div>`;
+                box.scrollTop = box.scrollHeight;
+            });
+        }        
+    </script>
+</body>
+</html>

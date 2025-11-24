@@ -1,0 +1,14 @@
+{% extends "core/base_dashboard.html" %}
+{% block menu %}
+<a href="{% url 'aluno_dashboard' %}">Dashboard</a>
+<a href="{% url 'aluno_notas' %}">Minhas Notas</a>
+<a href="{% url 'aluno_faltas' %}">Minhas Faltas</a>
+<a href="{% url 'aluno_biblioteca' %}">Biblioteca</a>
+<a href="{% url 'aluno_tarefas' %}">Tarefas</a>
+<a href="{% url 'aluno_notificacoes' %}">Notificações</a>
+<a href="{% url 'aluno_forum' %}">Fórum</a>
+<a href="{% url 'aluno_perfil' %}">Perfil</a>
+{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Minhas Notas</h1>
+{% endblock %}

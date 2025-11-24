@@ -1,24 +1,48 @@
-{% extends 'core/base.html' %}
-{% block title %}Login{% endblock %}
-{% block content %}
-<div class="d-flex justify-content-center align-items-center" style="height: 70vh;">
-  <div class="card p-4" style="width: 400px;">
-    <h4 class="text-center mb-3">Entrar</h4>
+<!-- core/templates/core/login.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center mb-6">Entrar no Sistema</h2>
+
+    {% if messages %}
+        {% for m in messages %}
+            <p class="text-red-500 text-center mb-4">{{ m }}</p>
+        {% endfor %}
+    {% endif %}
+
     <form method="POST">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label class="form-label">Usuário</label>
-        <input type="text" name="username" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Senha</label>
-        <input type="password" name="password" class="form-control" required>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Entrar</button>
-      <p class="text-center mt-3 mb-0">
-        <a href="{% url 'register' %}">Criar conta</a>
-      </p>
+        {% csrf_token %}
+        <label class="block font-semibold">Nome de Usuário</label>
+        <input type="text" name="username" required value="{{ username|default:'' }}"
+               class="w-full border p-2 rounded mb-4">
+
+        <label class="block font-semibold">Senha</label>
+        <input type="password" name="password" required
+               class="w-full border p-2 rounded mb-4">
+
+        <label class="block font-semibold">Entrar como:</label>
+        <select name="tipo" required class="w-full border p-2 rounded mb-6">
+            <option value="aluno">Aluno</option>
+            <option value="professor">Professor</option>
+        </select>
+
+        <button class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+            Entrar
+        </button>
     </form>
-  </div>
+
+    <p class="text-center mt-4">
+        <a href="{% url 'cadastro_aluno' %}" class="text-blue-600">Cadastrar como aluno</a>
+    </p>
+    <p class="text-center mt-2">
+        <a href="{% url 'cadastro_professor' %}" class="text-blue-600">Cadastrar como professor</a>
+    </p>
 </div>
-{% endblock %}
+</body>
+</html>
