@@ -1,11 +1,14 @@
+# core/admin.py
 from django.contrib import admin
-from .models import Profile, Subject, Grade, Attendance, LibraryItem, Notification, Task, ForumPost
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser, Profile
+
+@admin.register(CustomUser)
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    list_display = ("username", "email", "is_aluno", "is_professor", "is_staff")
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {"fields": ("is_aluno", "is_professor")}),
+    )
 
 admin.site.register(Profile)
-admin.site.register(Subject)
-admin.site.register(Grade)
-admin.site.register(Attendance)
-admin.site.register(LibraryItem)
-admin.site.register(Notification)
-admin.site.register(Task)
-admin.site.register(ForumPost)
